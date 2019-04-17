@@ -171,24 +171,53 @@ class PDollar:
 
     '''
     '''
+    def pinch_heuristic(self, points):
+        st_point_1 = points[0]
+        st_point_2 = None
+        end_pt_1 = None
+        end_point_2 = points[-1]
+        for p in points:
+            if p.stroke_id == 1:
+                st_point_2 = p
+                break
+            end_pt_1 = p
+
+        if abs(st_point_1.x - st_point_2.x) > abs(end_pt_1.x - end_point_2.x):
+            return 1
+        return 0
+
+
     def direction_h(self, points, template):
+        ret_val = 0.0
         can_x_diff = points[0].x - points[-1].x
         can_y_diff = points[0].y - points[-1].y
         tem_x_diff = template[0].x - template[-1].x
         tem_y_diff = template[0].y - template[-1].y
 
-        if abs(can_x_diff) > abs(can_y_diff):
-            if abs(tem_x_diff) > abs(tem_y_diff):
-                if ((points[0].x > points[-1].x) & (template[0].x < template[-1].x)) | \
-                   ((points[0].x < points[-1].x) & (template[0].x > template[-1].x)):
-                    return 4.0
-        else:
-            if abs(tem_x_diff) < abs(tem_y_diff):
-                if ((points[0].y > points[-1].y) & (template[0].y < template[-1].y)) | \
-                   ((points[0].y < points[-1].y) & (template[0].y > template[-1].y)) :
-                    return 4.0
+        flag1 = (points[-1].stroke_id == 1)
+        flag2 = (template[-1].stroke_id == 1)
 
-        return 0.0
+        if flag1 | flag2:
+            if flag1 & flag2:
+                points_direction = self.pinch_heuristic(points)
+                tem_direction = self.pinch_heuristic(template)
+                if points_direction != tem_direction:
+                    ret_val += 15.0
+            else:
+                ret_val += 15.0
+        else:
+            if abs(can_x_diff) > abs(can_y_diff):
+                if abs(tem_x_diff) > abs(tem_y_diff):
+                    if ((points[0].x > points[-1].x) & (template[0].x < template[-1].x)) | \
+                    ((points[0].x < points[-1].x) & (template[0].x > template[-1].x)):
+                        ret_val += 15.0
+            else:
+                if abs(tem_x_diff) < abs(tem_y_diff):
+                    if ((points[0].y > points[-1].y) & (template[0].y < template[-1].y)) | \
+                    ((points[0].y < points[-1].y) & (template[0].y > template[-1].y)) :
+                        ret_val += 15.0
+
+        return ret_val
     '''
     cloud_dist
 

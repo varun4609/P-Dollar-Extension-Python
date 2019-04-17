@@ -78,7 +78,7 @@ def user_dependant(user_pool, template_pool, gesture_pool, num_gestures_per_user
 
     log_f = open('log_file.csv', 'wb')
     writer = csv.writer(log_f, delimiter = ',')
-    writer.writerow(["Recognition Log: Varun Patni // $P // MMG // USER-DEPENDANT RANDOM-100"])
+    writer.writerow(["Recognition Log: Varun Patni // $P // Navigation gestures // USER-DEPENDANT RANDOM-100"])
     writer.writerow(["User[all-users]", "GestureType[all-gestures-types]", "RandomIteration[1to100]",
          "#ofTrainingExamples[E]", "TotalSizeOfTrainingSet[count]", "TrainingSetContents[specific-gesture-instances]",
          "Candidate[specific-instance]", "RecoResultGestureType[what-was-recognized]", "CorrectIncorrect[1or0]",
@@ -91,7 +91,7 @@ def user_dependant(user_pool, template_pool, gesture_pool, num_gestures_per_user
         # print("Loading templates for user " + user)
         # print("Done")
 
-        for num_training_templates in range(1,10):
+        for num_training_templates in range(1,4):
             
             for i in range(0, 100):
                 training_set = []
@@ -101,21 +101,19 @@ def user_dependant(user_pool, template_pool, gesture_pool, num_gestures_per_user
                 # create training set
                 index_str = []
                 for g in gesture_pool:
-                    tr_g_pool = []
-                    tr_g_pool_index = []
+                    tr_g_pool = {}
 
                     for x in template_list:
                         if x.name == g: 
-                            tr_g_pool.append(x)
-                            tr_g_pool_index.append(template_list.index(x))
-
-                    # tr_g_pool = [x for x in template_list if x.name == g]
+                            tr_g_pool[template_list.index(x)] = x
                     
                     for i in range(1, num_training_templates + 1):
-                        temp = random.choice(tr_g_pool)
-                        training_set.append(temp)
-                        index_str.append(tr_g_pool_index[tr_g_pool.index(temp)])
-                        tr_g_pool.remove(temp)
+                        temp = random.choice(list(tr_g_pool.keys()))
+                        training_set.append(tr_g_pool[temp])
+                        index_str.append(temp)
+                        del tr_g_pool[temp]
+                
+                
 
                 tr_str = "{"
                 count1 = 0
@@ -126,13 +124,14 @@ def user_dependant(user_pool, template_pool, gesture_pool, num_gestures_per_user
                 tr_str += "}"
 
                 template_list = [x for x in template_list if x not in training_set]
-
+               
                 # create testing set
                 test_index = []
                 t1 = []
                 for g in gesture_pool:
                     ts_g_pool = [x for x in template_list if x.name == g]
-
+                    if len(ts_g_pool) == 0:
+                        continue
                     for x in ts_g_pool:
                         test_index.append(template_pool[user].index(x))
                     temp = random.choice(ts_g_pool)

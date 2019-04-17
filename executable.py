@@ -1,4 +1,5 @@
 from recognizer import PDollar, Template, Point
+from PIL import ImageTk, Image
 import Tkinter as tk
 import trial
 
@@ -10,17 +11,47 @@ class ExampleApp(tk.Tk):
         self.stroke_count = 0
         self.dict = {}
         self.points_recorded = []
-        self.canvas = tk.Canvas(self, width=400, height=400, bg = "white", cursor="cross")
+
+        self.leftFrame = tk.Frame(self)
+        self.leftFrame.pack(side=tk.LEFT)
+        self.rightFrame = tk.Frame(self)
+        self.rightFrame.pack(side=tk.RIGHT)
+
+        import_img = ImageTk.PhotoImage(Image.open("Gesture_Image_1.png"))
+        self.img = tk.Label(self.rightFrame, image = import_img)
+        self.img.image = import_img
+        self.img.pack()
+
+        self.topFrame = tk.Frame(self.leftFrame)
+        self.topFrame.pack()
+        self.bottomFrame = tk.Frame(self.leftFrame)
+        self.bottomFrame.pack(side=tk.BOTTOM)
+
+        self.bottomSubFrame1 = tk.Frame(self.bottomFrame)
+        self.bottomSubFrame1.pack()
+
+        self.bottomSubFrame2 = tk.Frame(self.bottomFrame)
+        self.bottomSubFrame2.pack(side=tk.BOTTOM, fill=tk.Y, pady = 5)
+
+        self.canvas = tk.Canvas(self.topFrame, width=400, height=400, bg = "white", cursor="cross")
         self.canvas.pack(side="top", fill="both", expand=True)
-        self.button_print = tk.Button(self, text = "Display points", command = self.print_points)
-        self.button_print.pack(side="top", fill="both", expand=True)
-        self.result_box = tk.Text(self, height=1)
-        self.result_box.pack(side="top", fill="both", expand=True)
-        self.button_clear = tk.Button(self, text = "Clear", command = self.clear_all)
-        self.button_clear.pack(side="top", fill="both", expand=True)
+
+        self.result_label = tk.Label(self.bottomSubFrame1, text = "Result: ")
+        self.result_label.pack()
+
+        self.result_box = tk.Text(self.bottomSubFrame1, height=1, width = 55)
+        self.result_box.pack(side="bottom", fill="both", expand=True)
+
+        self.button_print = tk.Button(self.bottomSubFrame2, text = "Recognize", width = 30, bg= "gray", command = self.print_points)
+        self.button_print.pack(side=tk.LEFT, fill="both", expand=True, padx=10)
+        
+        self.button_clear = tk.Button(self.bottomSubFrame2, text = "Clear", width = 30, bg= "gray", command = self.clear_all)
+        self.button_clear.pack(side=tk.LEFT, fill="both", expand=True, padx=10)
+        
         self.canvas.bind("<Motion>", self.tell_)
         self.canvas.bind("<B1-Motion>", self.draw_)
         self.canvas.bind("<ButtonRelease-1>", self.save_)
+        
         self.template_list = trial.load_for_exe()['template_list_exe']
 
     '''
@@ -35,7 +66,7 @@ class ExampleApp(tk.Tk):
         self.x = event.x
         self.y = event.y
         self.canvas.create_line(self.previous_x, self.previous_y, 
-                                self.x, self.y,fill="yellow")
+                                self.x, self.y,fill="black")
         self.points_recorded.append(self.previous_x)
         self.points_recorded.append(self.previous_y)
         self.points_recorded.append(self.x)     
@@ -49,7 +80,9 @@ class ExampleApp(tk.Tk):
 
     def clear_all(self):
         self.canvas.delete("all")
+        self.result_box.delete(1.0, tk.END)
         self.dict = {}
+        self.stroke_count = 0
 
     def print_points(self):
         if self.points_recorded:
@@ -64,6 +97,8 @@ class ExampleApp(tk.Tk):
                         continue
                     rec_list.append(Point(item, point_list[point_list.index(item) + 1], key))
 
+        print(list(self.dict.keys()))
+
         recognizer = PDollar(self.template_list)
 
         x_diff = rec_list[0].x - rec_list[-1].x
@@ -72,9 +107,9 @@ class ExampleApp(tk.Tk):
         if abs(x_diff) > abs(y_diff):
             res_str += 'swipe'
             if rec_list[0].x > rec_list[-1].x:
-                res_str += '_right'
-            else:
                 res_str += '_left'
+            else:
+                res_str += '_right'
         else:
             res_str += 'scroll'
             if rec_list[0].y > rec_list[-1].y:
@@ -106,7 +141,7 @@ class ExampleApp(tk.Tk):
         self.x = event.x
         self.y = event.y
         self.canvas.create_line(self.previous_x, self.previous_y, 
-                                self.x, self.y,fill="yellow")
+                                self.x, self.y,fill="black")
         self.points_recorded.append(self.previous_x)
         self.points_recorded.append(self.previous_y)
         self.points_recorded.append(self.x)     
