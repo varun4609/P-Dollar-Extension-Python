@@ -30,9 +30,8 @@ class Point:
         self.stroke_id = stroke_id
 
 
-
 '''
-class User
+class Template
 
 Purpose of this class is to store a list of points that belong
 to a particular point cloud along with the name of the template.
@@ -46,7 +45,7 @@ class Template(list):
 
 
 '''
-class User
+class PDollar
 
 This class contains all of the $P algorithm logic incuding the
 pre-processing methods namely scale, resample, translate.
@@ -112,11 +111,11 @@ class PDollar:
         step = int(math.floor(n ** (1 - e)))
         temp_min = float("inf")
 
-        for i in range(0, n, step):
-            d_1 = self.cloud_dist(points, template, n, i)
-            d_2 = self.cloud_dist(template, points, n, i)
-            temp_min = min(temp_min, d_1, d_2)
-            #print (temp_min)
+        # for i in range(0, n, step):
+        d_1 = self.cloud_dist(points, template, n, 0)
+        d_2 = self.cloud_dist(template, points, n, 0)
+        temp_min = min(temp_min, d_1, d_2)
+        #print (temp_min)
         return temp_min
 
     '''
@@ -152,6 +151,7 @@ class PDollar:
         for template in self.templates:
             template = self.normalize(template, n)
             d = self.greedy_five(points, template, n)
+            d = self.direction_h(d, points, template)
             
             if score > d:
                 score = d
@@ -169,7 +169,24 @@ class PDollar:
             return None, score
         return result.name, score, res_count, N_best_list
 
-    
+    '''
+    '''
+    def direction_h(self, d, points, template):
+        can_x_diff = points[0].x - points[-1].x
+        can_y_diff = points[0].y - points[-1].y
+        tem_x_diff = template[0].x - template[-1].x
+        tem_y_diff = template[0].y - template[-1].y
+
+        if abs(can_x_diff) > abs(can_y_diff):
+            if abs(tem_x_diff) > abs(tem_y_diff):
+                if (points[0].x > points[-1].x) & (template[0].x < template[-1].x):
+                    d += 4
+        else:
+            if abs(tem_x_diff) < abs(tem_y_diff):
+                if (points[0].y > points[-1].y) & (template[0].y < template[-1].y):
+                    d += 4
+
+        return d
     '''
     cloud_dist
 

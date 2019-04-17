@@ -87,19 +87,11 @@ class ExampleApp(tk.Tk):
                 if point_list.index(item) % 2 == 0:
                     if point_list.index(item) == len(point_list) - 1:
                         continue
-                    # rec_list.append(Point(item, point_list[point_list.index(item) + 1], key))
-                    # rec_list.append([order, item, point_list[point_list.index(item) + 1]])
                     point = ET.SubElement(stroke, 'Point', Order=str(order), X=str(item), Y=str(point_list[point_list.index(item) + 1]))
                     order += 1
 
         tree = ET.ElementTree(root)
         tree.write('test-readings.xml')
-
-        # recognizer = PDollar(self.template_list)
-
-        # result = recognizer.recognize(rec_list)
-        # print(result)
-        # self.result_box.insert(tk.INSERT, result[0])
 
     
     '''
