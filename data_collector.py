@@ -81,7 +81,7 @@ class ExampleApp(tk.Tk):
         root = ET.Element('Gesture')
 
         for key, point_list in self.dict.items():
-            stroke = ET.SubElement(root, 'Stroke', index=str(key))
+            stroke = ET.SubElement(root, 'Stroke', index='0')
             order = 0
             for item in point_list:
                 if point_list.index(item) % 2 == 0:
