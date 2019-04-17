@@ -106,14 +106,14 @@ class PDollar:
     Returns total length of path from start point to end point following
     all the points in between
     '''
-    def greedy_five(self, points, template, n):
+    def greedy_five(self, points, template, n, score):
         e = 0.5
         step = int(math.floor(n ** (1 - e)))
         temp_min = float("inf")
 
         # for i in range(0, n, step):
-        d_1 = self.cloud_dist(points, template, n, 0)
-        d_2 = self.cloud_dist(template, points, n, 0)
+        d_1 = self.cloud_dist(points, template, n, 0, score)
+        d_2 = self.cloud_dist(template, points, n, 0, score)
         temp_min = min(temp_min, d_1, d_2)
         #print (temp_min)
         return temp_min
@@ -150,8 +150,8 @@ class PDollar:
         
         for template in self.templates:
             template = self.normalize(template, n)
-            d = self.greedy_five(points, template, n)
-            d = self.direction_h(d, points, template)
+            d = self.greedy_five(points, template, n, score)
+            # d = self.direction_h(d, points, template)
             
             if score > d:
                 score = d
@@ -171,7 +171,7 @@ class PDollar:
 
     '''
     '''
-    def direction_h(self, d, points, template):
+    def direction_h(self, points, template):
         can_x_diff = points[0].x - points[-1].x
         can_y_diff = points[0].y - points[-1].y
         tem_x_diff = template[0].x - template[-1].x
@@ -179,14 +179,16 @@ class PDollar:
 
         if abs(can_x_diff) > abs(can_y_diff):
             if abs(tem_x_diff) > abs(tem_y_diff):
-                if (points[0].x > points[-1].x) & (template[0].x < template[-1].x):
-                    d += 4
+                if ((points[0].x > points[-1].x) & (template[0].x < template[-1].x)) | \
+                   ((points[0].x < points[-1].x) & (template[0].x > template[-1].x)):
+                    return 4.0
         else:
             if abs(tem_x_diff) < abs(tem_y_diff):
-                if (points[0].y > points[-1].y) & (template[0].y < template[-1].y):
-                    d += 4
+                if ((points[0].y > points[-1].y) & (template[0].y < template[-1].y)) | \
+                   ((points[0].y < points[-1].y) & (template[0].y > template[-1].y)) :
+                    return 4.0
 
-        return d
+        return 0.0
     '''
     cloud_dist
 
@@ -195,9 +197,10 @@ class PDollar:
 
     Returns the total distance between two point clouds
     '''
-    def cloud_dist(self, points, template, n, start):
+    def cloud_dist(self, points, template, n, start, score):
         matched = [False] * n
-        ret_val = 0
+        ret_val = 0.0
+        ret_val += self.direction_h(points, template)
         i = start
 
         while True:
@@ -211,6 +214,8 @@ class PDollar:
             matched[index] = True
             weight = 1 - ((i - start + n) % n) / n
             ret_val += weight * temp_min
+            if ret_val > score:
+                return ret_val
             i = (i + 1) % n
             if i == start:
                 break

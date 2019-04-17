@@ -83,7 +83,8 @@ class ExampleApp(tk.Tk):
                 res_str += '_down'
 
         result = recognizer.recognize(rec_list)
-        print(result)
+        print(result[0])
+        print(result[1])
         self.result_box.insert(tk.INSERT, res_str)
 
     
