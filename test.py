@@ -101,18 +101,19 @@ def user_dependant(user_pool, template_pool, gesture_pool, num_gestures_per_user
                 # create training set
                 index_str = []
                 for g in gesture_pool:
-                    tr_g_pool = {}
+                    tr_g_pool = []
+                    tr_g_pool_index = []
 
                     for x in template_list:
                         if x.name == g: 
-                            tr_g_pool[template_list.index(x)] = x
+                            tr_g_pool.append(x)
+                            tr_g_pool_index.append(template_list.index(x))
                     
                     for i in range(1, num_training_templates + 1):
-                        temp = random.choice(list(tr_g_pool.keys()))
-                        training_set.append(tr_g_pool[temp])
-                        index_str.append(temp)
-                        del tr_g_pool[temp]
-                
+                        temp = random.choice(tr_g_pool)
+                        training_set.append(temp)
+                        index_str.append(tr_g_pool_index[tr_g_pool.index(temp)])
+                        tr_g_pool.remove(temp)
                 
 
                 tr_str = "{"
@@ -147,6 +148,9 @@ def user_dependant(user_pool, template_pool, gesture_pool, num_gestures_per_user
 
                     if (expected == result[0]):
                         score += 1
+
+                    if result[0] == None:
+                        continue
 
                     n_list = "{"
                     for res in result[3]:

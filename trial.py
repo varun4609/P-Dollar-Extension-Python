@@ -53,7 +53,7 @@ def load_all():
             dict_data['gesture_pool'].append(gesture_type)
         points = []
 
-        strokeID = 1
+        strokeID = 0
 
         for item in root.findall('./Stroke'):
             # iterate child elements of item 

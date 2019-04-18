@@ -17,7 +17,7 @@ class ExampleApp(tk.Tk):
         self.rightFrame = tk.Frame(self)
         self.rightFrame.pack(side=tk.RIGHT)
 
-        import_img = ImageTk.PhotoImage(Image.open("Gesture_Image_1.png"))
+        import_img = ImageTk.PhotoImage(Image.open("Gesture_Image_2.png"))
         self.img = tk.Label(self.rightFrame, image = import_img)
         self.img.image = import_img
         self.img.pack()
@@ -53,6 +53,7 @@ class ExampleApp(tk.Tk):
         self.canvas.bind("<ButtonRelease-1>", self.save_)
         
         self.template_list = trial.load_for_exe()['template_list_exe']
+        self.recognizer = PDollar(self.template_list)
 
     '''
     save
@@ -97,11 +98,9 @@ class ExampleApp(tk.Tk):
                         continue
                     rec_list.append(Point(item, point_list[point_list.index(item) + 1], key))
 
-        recognizer = PDollar(self.template_list)
 
-        result = recognizer.recognize(rec_list)
-        print(result[0])
-        print(result[1])
+        result = self.recognizer.recognize(rec_list)
+
         self.result_box.delete(1.0, tk.END)
         self.result_box.insert(tk.INSERT, result[0] + ',' + str(result[1]))
 
@@ -131,29 +130,31 @@ class ExampleApp(tk.Tk):
         self.points_recorded.append(self.y)     
 
         if len(self.points_recorded) % 20 == 0:
-            first_x = self.points_recorded[0]
-            first_y = self.points_recorded[1]
-            last_x = self.points_recorded[-2]
-            last_y = self.points_recorded[-1]
 
-            x_diff = first_x - last_x
-            y_diff = first_y - last_y
-            res_str = ''
-            if abs(x_diff) > abs(y_diff):
-                res_str += 'swipe'
-                if first_x > last_x:
-                    res_str += '_left'
-                else:
-                    res_str += '_right'
+            if self.dict:
+                rec_list = []
+                self.dict[1] = self.points_recorded
+                for key, point_list in self.dict.items():
+                    for item in point_list:
+                        if point_list.index(item) % 2 == 0:
+                            if point_list.index(item) == len(point_list) - 1:
+                                continue
+                            rec_list.append(Point(item, point_list[point_list.index(item) + 1], key))
+                result = self.recognizer.recognize(rec_list)
+
+                self.result_box.delete(1.0, tk.END)
+                self.result_box.insert(tk.INSERT, result[0] + ',' + str(result[1]))
             else:
-                res_str += 'scroll'
-                if first_y > last_y:
-                    res_str += '_up'
-                else:
-                    res_str += '_down'
+                rec_list = []
+                for item in self.points_recorded:
+                    if self.points_recorded.index(item) % 2 == 0:
+                        if self.points_recorded.index(item) == len(self.points_recorded) - 1:
+                            continue
+                        rec_list.append(Point(item, self.points_recorded[self.points_recorded.index(item) + 1], 0))
+                result = self.recognizer.recognize(rec_list)
 
-            self.result_box.delete(1.0, tk.END)
-            self.result_box.insert(tk.INSERT, res_str)
+                self.result_box.delete(1.0, tk.END)
+                self.result_box.insert(tk.INSERT, result[0] + ',' + str(result[1]))
 
         self.previous_x = self.x
         self.previous_y = self.y
