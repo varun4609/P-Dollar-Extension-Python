@@ -97,30 +97,13 @@ class ExampleApp(tk.Tk):
                         continue
                     rec_list.append(Point(item, point_list[point_list.index(item) + 1], key))
 
-        print(list(self.dict.keys()))
-
         recognizer = PDollar(self.template_list)
-
-        x_diff = rec_list[0].x - rec_list[-1].x
-        y_diff = rec_list[0].y - rec_list[-1].y
-        res_str = ''
-        if abs(x_diff) > abs(y_diff):
-            res_str += 'swipe'
-            if rec_list[0].x > rec_list[-1].x:
-                res_str += '_left'
-            else:
-                res_str += '_right'
-        else:
-            res_str += 'scroll'
-            if rec_list[0].y > rec_list[-1].y:
-                res_str += '_up'
-            else:
-                res_str += '_down'
 
         result = recognizer.recognize(rec_list)
         print(result[0])
         print(result[1])
-        self.result_box.insert(tk.INSERT, res_str)
+        self.result_box.delete(1.0, tk.END)
+        self.result_box.insert(tk.INSERT, result[0] + ',' + str(result[1]))
 
     
     '''
@@ -145,7 +128,33 @@ class ExampleApp(tk.Tk):
         self.points_recorded.append(self.previous_x)
         self.points_recorded.append(self.previous_y)
         self.points_recorded.append(self.x)     
-        self.points_recorded.append(self.x)        
+        self.points_recorded.append(self.y)     
+
+        if len(self.points_recorded) % 20 == 0:
+            first_x = self.points_recorded[0]
+            first_y = self.points_recorded[1]
+            last_x = self.points_recorded[-2]
+            last_y = self.points_recorded[-1]
+
+            x_diff = first_x - last_x
+            y_diff = first_y - last_y
+            res_str = ''
+            if abs(x_diff) > abs(y_diff):
+                res_str += 'swipe'
+                if first_x > last_x:
+                    res_str += '_left'
+                else:
+                    res_str += '_right'
+            else:
+                res_str += 'scroll'
+                if first_y > last_y:
+                    res_str += '_up'
+                else:
+                    res_str += '_down'
+
+            self.result_box.delete(1.0, tk.END)
+            self.result_box.insert(tk.INSERT, res_str)
+
         self.previous_x = self.x
         self.previous_y = self.y
 
